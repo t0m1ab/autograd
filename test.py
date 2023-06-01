@@ -117,7 +117,7 @@ class Experiment():
         print("\n# FORWARD")
         print(f"Custom output = {custom_out_value} | chrono = {custom_tac-custom_tic:.10f} seconds")
         print(f"Torch output = {torch_out_value} | chrono = {torch_tac-torch_tic:.10f} seconds")
-        print(f"> Max absolute diff : {abs(torch_out_value - custom_out_value)}")
+        print(f"> Max absolute diff: {abs(torch_out_value - custom_out_value)}")
 
         # bacward pass torch
         torch_tic = time()
@@ -137,7 +137,7 @@ class Experiment():
         for x,y in zip(torch_input_grad, custom_input_grad):
             eps = abs(x-y)
             max_diff = eps if eps>max_diff else max_diff
-        print(f"> Max absolute diff : {max_diff}")
+        print(f"> Max absolute diff: {max_diff}")
 
         return max_diff < 5e-5
     
@@ -145,3 +145,18 @@ class Experiment():
         self.check_num_parameters()
         self.forward_backward()
         return True
+    
+
+if __name__ == "__main__":
+    
+    size = [4, 16, 128, 256, 256, 128, 4, 1]
+
+    exp = Experiment(
+        size=size,
+        bias=True,
+        activation="tanh",
+        copy2custom=1,
+        copy2torch=0,
+    )
+
+    exp_result = exp.run()
