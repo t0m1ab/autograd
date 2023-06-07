@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from engine import Number
 from nn import MLP
+from graphics import create_frame, create_gif
 
 
 def MSE(pred_labels: list[Number], true_labels: list[int]) -> Number:
@@ -44,7 +45,8 @@ class Trainer():
             epochs: int = 1,
             loss_name: str = "MSE",
             reg: str = None,
-            plot: bool = False,
+            plot: str = None,
+            gif: str = None,
         ):
 
         self.model = model
@@ -85,6 +87,7 @@ class Trainer():
             self.reg_loss = None
         
         self.plot = plot
+        self.gif = gif
     
     def train(self, train_dataset: list = None, train_labels: list = None):
 
@@ -145,6 +148,15 @@ class Trainer():
             
             if self.eval_set is not None and self.eval_labels is not None:
                 print("NO EVAL for the moment...")
+
+            if self.gif is not None:
+                create_frame(
+                    t=epoch,
+                    model=self.model,
+                    train_dataset=train_set,
+                    train_labels=train_labels,
+                    gif_name=self.gif,
+                )
         
         if self.plot is not None:
             steps = [k for k in range(self.steps_per_epoch * self.epochs)]
@@ -155,6 +167,9 @@ class Trainer():
             plt.ylabel("value")
             plt.title(f"Training of MLP{self.model.size} for {self.epochs} epochs on {len(train_set)} samples")
             plt.savefig(self.plot)
+        
+        if self.gif is not None:
+            create_gif(self.gif, self.epochs)
                 
 
 if __name__ == "__main__":
