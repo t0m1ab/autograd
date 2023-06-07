@@ -203,6 +203,7 @@ if __name__ == "__main__":
         loss_name="SVM",
         reg="L2",
         plot="training_SVM_L2.png",
+        # gif="gif",
     )
     
     trainer.train()
