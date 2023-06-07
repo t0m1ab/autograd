@@ -14,7 +14,7 @@ class Number():
         return f"Number( {self.value} | grad = {self.grad} )"
     
     def __str__(self):
-        return f"Number( {self.value} )"
+        return f"Number( {self.value} | grad = {self.grad} )"
 
     def __add__(self, other):
         other = other if isinstance(other, Number) else Number(other)
@@ -45,6 +45,34 @@ class Number():
 
     def __rmul__(self, other):
         return self * other
+    
+    def __neg__(self):
+        return self * -1 # well defined thanks to __mul__
+
+    def __sub__(self, other):
+        return self + (-other) # well defined thanks to __neg__
+
+    def __rsub__(self, other):
+        return other + (-self)
+    
+    def __pow__(self, other):
+        assert isinstance(other, (int, float)), "only supporting int/float powers for now"
+        out = Number(self.value**other, children=[self])
+
+        def _backward():
+            self.grad += (other * self.value**(other-1)) * out.grad
+        out._backward = _backward
+
+        return out
+
+    def relu(self):
+        out = Number(0 if self.value < 0 else self.value, children=[self])
+
+        def _backward():
+            self.grad += (out.value > 0) * out.grad
+        out._backward = _backward
+
+        return out
     
     def tanh(self):
         out = Number(tanh(self.value), children=[self])

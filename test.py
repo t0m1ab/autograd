@@ -82,7 +82,7 @@ class Experiment():
             raise ValueError(f"Number of parameters don't match: torch_count={torch_count} but custom_count={custom_count}")
         print(f"Number of parameters = {custom_count}")
 
-    def forward_backward(self, input: list = None, verbose: bool = False):
+    def forward_backward(self, input: list = None, tol: float=1e-6, verbose: bool = False):
 
         if self.size[-1] != 1:
             raise ValueError("Size[-1] != 1")
@@ -113,11 +113,15 @@ class Experiment():
         custom_out = self.custom_MLP(custom_input)
         custom_tac = time()
         custom_out_value = custom_out.value
+        forward_diff = abs(torch_out_value - custom_out_value)
 
         print("\n# FORWARD")
         print(f"Custom output = {custom_out_value} | chrono = {custom_tac-custom_tic:.10f} seconds")
         print(f"Torch output = {torch_out_value} | chrono = {torch_tac-torch_tic:.10f} seconds")
-        print(f"> Max absolute diff: {abs(torch_out_value - custom_out_value)}")
+        print(f"> Max absolute diff: {forward_diff}")
+
+        if forward_diff > tol:
+            raise ValueError(f"Max absolute diff FORWARD exceeds tol={tol}")
 
         # bacward pass torch
         torch_tic = time()
@@ -139,12 +143,13 @@ class Experiment():
             max_diff = eps if eps>max_diff else max_diff
         print(f"> Max absolute diff: {max_diff}")
 
-        return max_diff < 5e-5
+        if max_diff > tol:
+            raise ValueError(f"Max absolute diff BACKWARD exceeds tol={tol}")
     
     def run(self):
         self.check_num_parameters()
         self.forward_backward()
-        return True
+        print("\nAll tests were passed! Congrats!")
     
 
 if __name__ == "__main__":
